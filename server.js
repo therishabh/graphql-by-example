@@ -1,27 +1,28 @@
-import { ApolloServer } from "apollo-server";
-import { ApolloServerPluginLandingPageGraphQLPlayground } from "apollo-server-core";
+import cors from "cors";
+import express from "express";
+import { authMiddleware, handleLogin } from "./auth.js";
+import { ApolloServer } from "@apollo/server";
+import { readFile } from "node:fs/promises";
+import { expressMiddleware as apolloMiddleware } from "@as-integrations/express4";
+import { resolvers } from "./reducers.js";
 
-const typeDefs = `#graphql
-    type Query {
-        greeting: String
-    }
-`;
+const PORT = 9000;
 
-const resolvers = {
-  Query: {
-    greeting: () => "Hello Rishabh",
-  },
-};
+const app = express();
+app.use(cors(), express.json(), authMiddleware);
 
-const startServer = async () => {
-  const server = new ApolloServer({
-    typeDefs: typeDefs,
-    resolvers: resolvers,
-    plugins: [ApolloServerPluginLandingPageGraphQLPlayground],
-  });
+app.post("/login", handleLogin);
 
-  const { url } = await server.listen({ port: process.env.PORT || 4040 });
-  console.log(`\n🚀 Server ready at ${url}`);
-};
+const typeDefs = await readFile("./schema.graphql", "utf-8");
 
-startServer();
+const apolloServer = new ApolloServer({
+  typeDefs,
+  resolvers,
+});
+await apolloServer.start();
+app.use("/graphql", apolloMiddleware(apolloServer));
+
+app.listen({ port: PORT }, () => {
+  console.log(`Server running on port ${PORT}`);
+  console.log(`GraphQL running on http://localhost:${PORT}/graphql`);
+});
