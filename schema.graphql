@@ -1,19 +1,25 @@
 type Query {
-    job: [Job]
+  job(jobId: ID!): Job
+  jobs: [Job]
+  company(companyId: ID!): Company
 }
 
-"""this description is for job"""
+"""
+this description is for job
+"""
 type Job {
-    id : ID!
-    title : String!
-    """this is my description"""
-    date : String!
-    description : String
-    company: Company!
+  id: ID!
+  title: String!
+  """
+  this is my description
+  """
+  date: String!
+  description: String
+  company: Company!
 }
 
 type Company {
-    id: ID!
-    name: String!
-    description: String
+  id: ID!
+  name: String!
+  description: String
 }
