@@ -1,18 +1,27 @@
+import { GraphQLError } from "graphql";
 import { getCompany } from "./db/companies.js";
 import { getJob, getJobs, getJobsByCompany } from "./db/jobs.js";
 
 export const resolvers = {
   Query: {
-    job: (_root, args) => {
-      const jobInfo = getJob(args.jobId);
+    job: async (_root, args) => {
+      const jobInfo = await getJob(args.jobId);
+      if (!jobInfo) {
+        throw notFoundError(`No Job data found with id : ${args.jobId}`);
+      }
       return jobInfo;
     },
     jobs: () => {
       const jobs = getJobs();
       return jobs;
     },
-    company: (_root, args) => {
-      const company = getCompany(args.companyId);
+    company: async (_root, args) => {
+      const company = await getCompany(args.companyId);
+      if (!company) {
+        throw notFoundError(
+          `No Company data found with id : ${args.companyId}`
+        );
+      }
       return company;
     },
   },
@@ -33,6 +42,14 @@ export const resolvers = {
     },
   },
 };
+
+function notFoundError(message) {
+  return new GraphQLError(message, {
+    extensions: {
+      code: "NOT_FOUND",
+    },
+  });
+}
 
 function toIsoDate(value) {
   return value.slice(0, "yyyy-mm-dd".length);
