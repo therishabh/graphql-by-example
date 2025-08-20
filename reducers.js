@@ -1,6 +1,13 @@
 import { GraphQLError } from "graphql";
 import { getCompany } from "./db/companies.js";
-import { createJob, getJob, getJobs, getJobsByCompany } from "./db/jobs.js";
+import {
+  createJob,
+  deleteJob,
+  getJob,
+  getJobs,
+  getJobsByCompany,
+  updateJob,
+} from "./db/jobs.js";
 
 export const resolvers = {
   Query: {
@@ -27,14 +34,28 @@ export const resolvers = {
   },
 
   Mutation: {
-    createJob: async (_root, args) => {
-      const { title, description } = args;
+    createJob: async (_root, { input }) => {
+      // console.log("args", args);
+      const { title, description } = input;
       const data = await createJob({
         companyId: "Gu7QW9LcnF5d",
         title: title,
         description: description,
       });
       return data;
+    },
+    deleteJob: async (_root, { id }) => {
+      const data = await deleteJob(id);
+      return data;
+    },
+    updateJob: async (_root, { input }) => {
+      const { id, title, description } = input;
+      const job = await updateJob({
+        id,
+        title,
+        description,
+      });
+      return job;
     },
   },
 
