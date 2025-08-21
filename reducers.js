@@ -34,15 +34,19 @@ export const resolvers = {
   },
 
   Mutation: {
-    createJob: async (_root, { input }) => {
-      // console.log("args", args);
+    createJob: async (_root, { input }, { user }) => {
       const { title, description } = input;
-      const data = await createJob({
-        companyId: "Gu7QW9LcnF5d",
-        title: title,
-        description: description,
-      });
-      return data;
+
+      if (user) {
+        const data = await createJob({
+          companyId: user.companyId,
+          title: title,
+          description: description,
+        });
+        return data;
+      }
+
+      throw Unauthorized("Authorization missing");
     },
     deleteJob: async (_root, { id }) => {
       const data = await deleteJob(id);
@@ -84,7 +88,14 @@ function notFoundError(message) {
   });
 }
 
+function Unauthorized(message) {
+  return new GraphQLError(message, {
+    extensions: {
+      code: "UNAUTHORIZED",
+    },
+  });
+}
+
 function toIsoDate(value) {
   return value.slice(0, "yyyy-mm-dd".length);
-  v;
 }
